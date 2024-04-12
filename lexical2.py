@@ -41,14 +41,14 @@ def lexical_analyzer(code :str):
         ch :str= code[i]
         # Check for new lines
         if ch == '\n':
-            tokens.append(('Whitespace',' ',line_number))
+            tokens.append(('T_Whitespace',' ',line_number))
             line_number += 1
             i += 1
             continue
 
         # whitespace
         elif ch.isspace():
-            tokens.append(('Whitespace',' ',line_number))
+            tokens.append(('T_Whitespace',' ',line_number))
             i += 1
             continue
 
@@ -58,9 +58,9 @@ def lexical_analyzer(code :str):
                 current_token += code[i]
                 i += 1
             if current_token in KEYWORDS:
-                tokens.append((current_token.capitalize(),current_token,line_number))
+                tokens.append(('T_'+current_token.capitalize(),current_token,line_number))
             else:
-                tokens.append(('Id',current_token,line_number))
+                tokens.append(('T_Id',current_token,line_number))
 
             current_token = ''
 
@@ -71,7 +71,7 @@ def lexical_analyzer(code :str):
             while i<len(code) and (code[i].isdigit() or code[i] in ['A','B','C','D','E','F']):
                 current_token +=code[i]
                 i+=1
-            tokens.append(('Hexadecimal',current_token,line_number))
+            tokens.append(('T_Hexadecimal',current_token,line_number))
             current_token = ''
             
         # Check Decimal Numbers
@@ -95,92 +95,92 @@ def lexical_analyzer(code :str):
                     current_token +=code[i]
                     i+=1
                 
-            tokens.append(('DEcimal',current_token,line_number))
+            tokens.append(('T_Decimal',current_token,line_number))
             current_token = ''
         # Check for < or <=
         elif ch=='<':
             if code[i+1]=='=':
-                tokens.append(('Rop_LE','<=',line_number))
+                tokens.append(('T_ROp_LE','<=',line_number))
                 i=i+2
                 continue
-            tokens.append(('ROp_L','<',line_number))
+            tokens.append(('T_ROp_L','<',line_number))
             i+=1
         
         # Check for > or >=
         elif ch=='>':
             if code[i+1]=='=':
-                tokens.append(('Rop_GE','>=',line_number))
+                tokens.append(('T_ROp_GE','>=',line_number))
                 i=i+2
                 continue
-            tokens.append(('ROp_G','>',line_number))
+            tokens.append(('T_ROp_G','>',line_number))
             i+=1
         
         # Check for ! or !=
         elif ch=='!':
             if code[i+1]=='=':
-                tokens.append(('ROp_NE','!=',line_number))
+                tokens.append(('T_ROp_NE','!=',line_number))
                 i=i+2
                 continue
-            tokens.append(('LOp_NOT','!',line_number))
+            tokens.append(('T_LOp_NOT','!',line_number))
             i+=1
         
         # Chech for ||
         elif ch=='|' and code[i+1]=='|':
-            tokens.append(('LOp_OR','||',line_number))
+            tokens.append(('T_LOp_OR','||',line_number))
             i=i+2
         
         # Check for &&
         elif ch=='&' and code[i+1]=='&':
-            tokens.append(('LOp_AND','&&',line_number))
+            tokens.append(('T_LOp_AND','&&',line_number))
             i=i+2
 
         # Check for = or ==
         elif ch=='=':
             if code[i+1]=='=':
-                tokens.append(('ROp_E','==',line_number))
+                tokens.append(('T_ROp_E','==',line_number))
                 i=i+2
                 continue
-            tokens.append(('Assign','=',line_number))
+            tokens.append(('T_Assign','=',line_number))
             i+=1
 
         # Check for (
         elif ch=='(':
-            tokens.append(('LP','(',line_number))
+            tokens.append(('T_LP','(',line_number))
             i+=1
         
         # Check for )
         elif ch==')':
-            tokens.append(('RP',')',line_number))
+            tokens.append(('T_RP',')',line_number))
             i+=1
         
         # Check for {
         elif ch=='{':
-            tokens.append(('LC','{',line_number))
+            tokens.append(('T_LC','{',line_number))
             i+=1
         
         # Check for }
         elif ch=='}':
-            tokens.append(('RC','}',line_number))
+            tokens.append(('T_RC','}',line_number))
             i+=1
         
         # Check for [
         elif ch=='[':
-            tokens.append(('LB','[',line_number))
+            tokens.append(('T_LB','[',line_number))
             i+=1
         
         # Check for ]
         elif ch==']':
-            tokens.append(('RB',']',line_number))
+            tokens.append(('T_RB',']',line_number))
             i+=1
         
         # Check for ;
         elif ch==';':
-            tokens.append(('Semicolon',';',line_number))
+            tokens.append(('T_Semicolon',';',line_number))
             i+=1
         
         # Check for ,
         elif ch==',':
-            tokens.append(('Comma',',',line_number))
+            tokens.append(('T_Comma',',',line_number))
             i+=1
         
         # Check for comments
@@ -191,39 +191,39 @@ def lexical_analyzer(code :str):
                 current_token+=code[i]
                 i+=1
             current_token+=code[i]
-            tokens.append(('Comments',current_token,line_number))
+            tokens.append(('T_Comments',current_token,line_number))
             i+=1
             current_token=''
         
         # Check for /
         elif ch=='/':
-            tokens.append(('DV','/',line_number))
+            tokens.append(('T_DV','/',line_number))
             i+=1
 
         # Check for %
         elif ch=='%':
-            tokens.append(('RM','%',line_number))
+            tokens.append(('T_RM','%',line_number))
             i+=1
 
         # Check for *
         elif ch=='*':
-            tokens.append(('ML','*',line_number))
+            tokens.append(('T_ML','*',line_number))
             i+=1
         
         # Check for +
         elif ch=='+':
-            tokens.append(('AOp_PL','+',line_number))
+            tokens.append(('T_AOp_PL','+',line_number))
             i+=1
         
         # Check for -
         elif ch=='-':
-            tokens.append(('AOp_MN','-',line_number))
+            tokens.append(('T_AOp_MN','-',line_number))
             i+=1
         
         # Check for Char
         elif ch=='\'' and code[i+2]=='\'':
             current_token=current_token + ch + code[i+1]+code[i+2]
-            tokens.append(('Char',current_token,line_number))
+            tokens.append(('T_Character',current_token,line_number))
             i=i+3
             current_token=''            
         
@@ -235,14 +235,14 @@ def lexical_analyzer(code :str):
                 current_token+=code[i]
                 i+=1
             current_token+=code[i]
-            tokens.append(('String',current_token,line_number))
+            tokens.append(('T_String',current_token,line_number))
             current_token=''
             i+=1
 
         
         # Unknown token
         else:
-            tokens.append(('Uknown', ch, line_number))
+            tokens.append(('T_Uknown', ch, line_number))
             i += 1
 
     return tokens
@@ -250,6 +250,7 @@ def lexical_analyzer(code :str):
 
 code='''int a=b+c;
 bool a=0; //test
+char a='a';
 '''
 
 tokens=lexical_analyzer(code)
