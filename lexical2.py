@@ -65,10 +65,10 @@ def lexical_analyzer(code :str):
             current_token = ''
 
         # Check Hexdecimal Numbers
-        elif ch=='0' and code[i+1]=='x':
+        elif ch=='0' and code[i+1]=='X':
             current_token+='0x'
             i=i+2
-            while i<len(code) and (code[i].isdigit() or code[i] in ['A','B','C','D','E','F']):
+            while i<len(code) and (code[i].isdigit() or code[i].upper() in ['A','B','C','D','E','F']):
                 current_token +=code[i]
                 i+=1
             tokens.append(('T_Hexadecimal',current_token,line_number))
@@ -190,7 +190,7 @@ def lexical_analyzer(code :str):
             while i<len(code) and code[i]!='\n':
                 current_token+=code[i]
                 i+=1
-            current_token+=code[i]
+            #current_token+=code[i]
             tokens.append(('T_Comments',current_token,line_number))
             i+=1
             current_token=''
@@ -221,6 +221,11 @@ def lexical_analyzer(code :str):
             i+=1
         
         # Check for Char
+        elif ch=='\'' and code[i+3]=='\'':
+            current_token=current_token + ch + code[i+2]+code[i+3]
+            tokens.append(('T_Character',current_token,line_number))
+            i=i+4
+            current_token='' 
         elif ch=='\'' and code[i+2]=='\'':
             current_token=current_token + ch + code[i+1]+code[i+2]
             tokens.append(('T_Character',current_token,line_number))
@@ -231,9 +236,15 @@ def lexical_analyzer(code :str):
         elif ch=='\"':
             current_token+=ch
             i+=1
-            while i<len(code) and code[i]!='\"':
-                current_token+=code[i]
-                i+=1
+            while i<len(code):
+                if code[i]=='\"':
+                    break
+                elif code[i]=='\\' and code[i+1]=='"':
+                    current_token+=code[i+1]
+                    i+=2
+                else:
+                    current_token+=code[i]
+                    i+=1
             current_token+=code[i]
             tokens.append(('T_String',current_token,line_number))
             current_token=''
@@ -248,11 +259,11 @@ def lexical_analyzer(code :str):
     return tokens
 
 
-code='''int a=b+c;
-bool a=0; //test
-char a='a';
-'''
-
+code = open("test1.txt",'r').read()
+# code='''int a=b+c;
+# bool a=0; //test
+# char a='a';
+# '''
 tokens=lexical_analyzer(code)
 
 for token in tokens:
