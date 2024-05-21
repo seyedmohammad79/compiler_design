@@ -1,5 +1,3 @@
-import string
-
 # Token types
 TOKEN_KEYWORD = 'KEYWORD'
 TOKEN_IDENTIFIER = 'IDENTIFIER'
@@ -259,7 +257,7 @@ def lexical_analyzer(code :str):
     return tokens
 
 
-code = open("test1.txt",'r').read()
+code = open("test2.txt",'r').read()
 # code='''int a=b+c;
 # bool a=0; //test
 # char a='a';
