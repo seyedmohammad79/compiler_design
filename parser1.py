@@ -1,4 +1,3 @@
- 
 def removeLeftRecursion(rulesDiction):
     # for rule: A->Aa|b
     # result: A->bA',A'->aA'| e
@@ -168,31 +167,18 @@ def follow(nt):
  
     solset = set()
     if nt == start_symbol:
-        # return '$'
         solset.add('$')
- 
-    # check all occurrences
-    # solset - is result of computed 'follow' so far
- 
-    # For input, check in all rules
+
+
     for curNT in diction:
         rhs = diction[curNT]
-        # go for all productions of NT
         for subrule in rhs:
             if nt in subrule:
-                # call for all occurrences on
-                # - non-terminal in subrule
                 while nt in subrule:
                     index_nt = subrule.index(nt)
                     subrule = subrule[index_nt + 1:]
-                    # empty condition - call follow on LHS
                     if len(subrule) != 0:
-                        # compute first if symbols on
-                        # - RHS of target Non-Terminal exists
                         res = first(subrule)
-                        # if epsilon in result apply rule
-                        # - (A->aBX)- follow of -
-                        # - follow(B)=(first(X)-{ep}) U follow(A)
                         if '#' in res:
                             newList = []
                             res.remove('#')
@@ -206,13 +192,9 @@ def follow(nt):
                                 newList = res
                             res = newList
                     else:
-                        # when nothing in RHS, go circular
-                        # - and take follow of LHS
-                        # only if (NT in LHS)!=curNT
                         if nt != curNT:
                             res = follow(curNT)
- 
-                    # add follow result in set form
+
                     if res is not None:
                         if type(res) is list:
                             for g in res:
@@ -220,7 +202,7 @@ def follow(nt):
                         else:
                             solset.add(res)
     return list(solset)
- 
+
  
 def computeAllFirsts():
     global rules, nonterm_userdef, \
@@ -341,10 +323,13 @@ def createParseTable():
  
     # Classifying grammar as LL(1) or not LL(1)
     grammar_is_LL = True
- 
+
+    print('diction:',diction)
     # rules implementation
     for lhs in diction:
+        print('lhs:',lhs)
         rhs = diction[lhs]
+        print('rhs:',rhs)
         for y in rhs:
             res = first(y)
             # epsilon is present,
@@ -369,6 +354,7 @@ def createParseTable():
                 ttemp.append(res)
                 res = copy.deepcopy(ttemp)
             for c in res:
+                print('c:',c)
                 xnt = ntlist.index(lhs)
                 yt = terminals.index(c)
                 if mat[xnt][yt] == '':
@@ -376,13 +362,19 @@ def createParseTable():
                                    + f"{lhs}->{' '.join(y)}"
                 else:
                     # if rule already present
+                    print(f"{lhs}->{y}")
                     if f"{lhs}->{y}" in mat[xnt][yt]:
                         continue
                     else:
                         grammar_is_LL = False
                         mat[xnt][yt] = mat[xnt][yt] \
                                        + f",{lhs}->{' '.join(y)}"
- 
+    for lhs in diction:
+        for c in follows[lhs]:
+            xnt = ntlist.index(lhs)
+            yt = terminals.index(c)
+            if mat[xnt][yt] == '':
+                mat[xnt][yt] = 'sync'
     # final state of parse table
     print("\nGenerated parsing table:\n")
     frmt = "{:>12}" * len(terminals)
@@ -461,5 +453,166 @@ def validateStringUsingStackBuffer(parsing_table, grammarll1,
             else:
                 return "\nInvalid String! " \
                        "Unmatched terminal symbols"
+            
+sample_input_string = None
+ 
+# sample set 1 (Result: Not LL(1))
+# rules=["A -> S B | B",
+#        "S -> a | B c | #",
+#        "B -> b | d"]
+# nonterm_userdef=['A','S','B']
+# term_userdef=['a','c','b','d']
+# sample_input_string="b c b"
+ 
+# sample set 2 (Result: LL(1))
+# rules=["S -> A | B C",
+#        "A -> a | b",
+#        "B -> p | #",
+#        "C -> c"]
+# nonterm_userdef=['A','S','B','C']
+# term_userdef=['a','c','b','p']
+# sample_input_string="p c"
+ 
+# sample set 3 (Result: LL(1))
+# rules=["S -> A B | C",
+#        "A -> a | b | #",
+#        "B-> p | #",
+#        "C -> c"]
+# nonterm_userdef=['A','S','B','C']
+# term_userdef=['a','c','b','p']
+# sample_input_string="a c b"
+ 
+# sample set 4 (Result: Not LL(1))
+# rules = ["S -> A B C | C",
+#          "A -> a | b B | #",
+#          "B -> p | #",
+#         "C -> c"]
+# nonterm_userdef=['A','S','B','C']
+# term_userdef=['a','c','b','p']
+# sample_input_string="b p p c"
+ 
+# sample set 5 (With left recursion)
+# rules=["A -> B C c | g D B",
+#        "B -> b C D E | #",
+#        "C -> D a B | c a",
+#        "D -> # | d D",
+#        "E -> E a f | c"
+#       ]
+# nonterm_userdef=['A','B','C','D','E']
+# term_userdef=["a","b","c","d","f","g"]
+# sample_input_string="b a c a c"
+ 
+# sample set 6
+rules=["E -> T E'",
+       "E' -> + T E' | #",
+       "T -> F T'",
+       "T' -> * F T' | #",
+       "F -> ( E ) | id"
+]
+nonterm_userdef=['E','E\'','F','T','T\'']
+term_userdef=['id','+','*','(',')']
+sample_input_string="id * * id"
+sample_input_string="( id * id )"
+sample_input_string="( id ) * id + id"
+ 
+# sample set 7 (left factoring & recursion present)
+# rules=["S -> A k O",
+#        "A -> A d | a B | a C",
+#        "C -> c",
+#        "B -> b B C | r"]
+# rules=["E -> T E'",
+#         "E' -> + T E' | #",
+#         "T -> F T'",
+#         "T' -> * F T' | #",
+#         "F -> ( E ) | id"
+# ]
+
+# rules = [
+#     "Program -> declaration-list",
+#     "declaration-list -> declaration",
+#     "declaration -> variable-declaration",
+#     "variable-declaration -> type-specifier id initialization",
+#     "initialization -> Assign expression",
+#     # "declaration -> variable-declaration | function-declaration",
+#     # "variable-declaration -> type-specifier id variable-declaration-tail",
+#     # "variable-declaration-tail -> initialization | array-declaration-tail | Semicolon | Comma id variable-declaration-tail",
+#     # "initialization -> Assign expression",
+#     # "array-declaration-tail -> LB number RB variable-declaration-tail | LB number RB initialization variable-declaration-tail | LB number RB Semicolon",
+#     "type-specifier -> int | bool | char | void",
+#     # "function-declaration -> type-specifier id LP parameter-list RP compound-statement",
+#     # "parameter-list -> void | parameter | parameter-list Comma parameter",
+#     # "parameter -> type-specifier id",
+#     # "compound-statement -> LC declaration-list statement-list RC",
+#     # "statement-list -> statement | statement-list statement",
+#     # "statement -> expression-statement | compound-statement | selection-statement | iteration-statement | return-statement",
+#     # "expression-statement -> expression Semicolon | Semicolon",
+#     # "selection-statement -> if expression statement | if LP expression RP statement else statement",
+#     # "iteration-statement -> while LP expression RP statement | for LP for-init-statement expression-statement expression RP statement",
+#     # "for-init-statement -> declaration | expression-statement",
+#     "number -> Decimal | Hexadecimal",
+#     "expression -> String | number",
+#     # "letter -> a | b | c | d | d | f | g | h | i | j | k | l | m | n | o| p | q | r | s | t | u | v | w | x | y | z | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | _",
+#     # "digit -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9",
+# ]
+
+
+# nonterm_userdef = ["Program", "declaration-list", "declration", "variable-declaration", "function-declaration",
+#                    "type-specifier", "variable-declaration-tail", "variable-declration-tail",
+#                    "expression", "array-declaration-tail", "initializatoin", "parameter-list", "compound-statement","number",
+#                    "statement-list","statement","expression-statement","selection-statement","iteration-statement"
+#                     ,"for-init-statement"]
+# term_userdef=[';', ',', 'int', 'bool', 'char', 'void', 'Assign', 'RB', 'LB',"String","Decimal","Hexadecimal","id","LC","RC","LP","RP","Semicolon","Comma"
+#             ,'if','for','break','continue','else','false','print','return','true','while'
+#             #   'a', 'b', 'c', 'd', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_'\
+#               ]
+
+
+
+# # nonterm_userdef=['E','E\'','F','T','T\'']
+# # term_userdef=['id','+','*','(',')']
+# sample_input_string="int id Assign Decimal"
+ 
+# sample set 8 (Multiple char symbols T & NT)
+# rules = ["S -> NP VP",
+#          "NP -> P | PN | D N",
+#          "VP -> V NP",
+#          "N -> championship | ball | toss",
+#          "V -> is | want | won | played",
+#          "P -> me | I | you",
+#          "PN -> India | Australia | Steve | John",
+#          "D -> the | a | an"]
+#
+# nonterm_userdef = ['S', 'NP', 'VP', 'N', 'V', 'P', 'PN', 'D']
+# term_userdef = ["championship", "ball", "toss", "is", "want",
+#                 "won", "played", "me", "I", "you", "India",
+#                 "Australia","Steve", "John", "the", "a", "an"]
+# sample_input_string = "India won the championship"
+ 
+# diction - store rules inputted
+# firsts - store computed firsts
+diction = {}
+firsts = {}
+follows = {}
+ 
+# computes all FIRSTs for all non terminals
+computeAllFirsts()
+# assuming first rule has start_symbol
+# start symbol can be modified in below line of code
+start_symbol = list(diction.keys())[0]
+# computes all FOLLOWs for all occurrences
+computeAllFollows()
+# generate formatted first and follow table
+# then generate parse table
+ 
+(parsing_table, result, tabTerm) = createParseTable()
+ 
+# validate string input using stack-buffer concept
+if sample_input_string != None:
+    validity = validateStringUsingStackBuffer(parsing_table, result,
+                                              tabTerm, sample_input_string,
+                                              term_userdef,start_symbol)
+    print(validity)
+else:
+    print("\nNo input String detected")
  
  
