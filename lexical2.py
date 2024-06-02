@@ -9,7 +9,7 @@ TOKEN_UNKNOWN = 'UNKNOWN'
 # Keywords
 KEYWORDS = [
     'bool','break','char','continue','else','false',
-    'for','if','int','printf','return','true','while'
+    'for','if','int','print','return','true','while'
 ]
 
 # Punctuation_marks
